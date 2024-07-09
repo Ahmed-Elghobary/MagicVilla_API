@@ -1,4 +1,6 @@
-﻿namespace MagicVilla_VillaAPI
+﻿using System.IdentityModel.Tokens.Jwt;
+
+namespace MagicVilla_VillaAPI
 {
     public class Steps
     {
@@ -8,10 +10,7 @@
         2- Add source control
         3- Add controller
         4- Add Villa model
-
-         
-         
-         
          */
+       
     }
 }
