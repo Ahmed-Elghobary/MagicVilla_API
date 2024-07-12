@@ -7,24 +7,26 @@ using System.Net;
 
 namespace MagicVilla_VillaAPI.Controllers
 {
-    [Route("api/UsersAuth")]
+    [Route("api/v{version:apiVersion}/UsersAuth")]
+    [ApiVersionNeutral]
+
     [ApiController]
     public class UsersController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
         protected APIResponse _response;
-        public UsersController(IUserRepository userRepository) 
+        public UsersController(IUserRepository userRepository)
         {
             _userRepository = userRepository;
-            this._response = new APIResponse();
+            _response = new APIResponse();
         }
 
 
         [HttpPost("login")]
-        public async Task< IActionResult> Login([FromBody]LoginRequestDTO model)
+        public async Task<IActionResult> Login([FromBody] LoginRequestDTO model)
         {
-            var LoginResponse= await _userRepository.Login(model);
-            if(LoginResponse.User==null|| string.IsNullOrEmpty(LoginResponse.Token))
+            var LoginResponse = await _userRepository.Login(model);
+            if (LoginResponse.User == null || string.IsNullOrEmpty(LoginResponse.Token))
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
@@ -40,7 +42,7 @@ namespace MagicVilla_VillaAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterationRequestDTO model)
         {
-           bool ifUserNameUnique=_userRepository.IsUniqueUser(model.UserName);
+            bool ifUserNameUnique = _userRepository.IsUniqueUser(model.UserName);
             if (!ifUserNameUnique)
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;
@@ -49,7 +51,7 @@ namespace MagicVilla_VillaAPI.Controllers
                 return BadRequest(_response);
             }
             var user = await _userRepository.Register(model);
-            if(user==null)
+            if (user == null)
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
@@ -57,7 +59,7 @@ namespace MagicVilla_VillaAPI.Controllers
                 return BadRequest(_response);
 
             }
-            _response.StatusCode=HttpStatusCode.OK;
+            _response.StatusCode = HttpStatusCode.OK;
             _response.IsSuccess = true;
             return Ok(_response);
         }

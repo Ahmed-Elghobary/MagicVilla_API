@@ -10,10 +10,13 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using System.Text.Json;
 
-namespace MagicVilla_VillaAPI.Controllers
+namespace MagicVilla_VillaAPI.Controllers.v1
 {
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1.0")]
+
     [ApiController]
     public class VillaAPIController : ControllerBase
     {
@@ -27,21 +30,40 @@ namespace MagicVilla_VillaAPI.Controllers
             _logger = logger;
             _mapper = mapper;
             _dbVilla = dbVilla;
-            this._response = new APIResponse();
+            _response = new APIResponse();
         }
         [HttpGet]
-        [Authorize]
+        //[Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ResponseCache( CacheProfileName = "Default30")]
 
-        public async Task<ActionResult<APIResponse>> GetVillas()
+        public async Task<ActionResult<APIResponse>> GetVillas([FromQuery(Name ="FilterOccupancy")] int ? occupancy,
+            [FromQuery] string? search, int pageSize = 0 , int pageNumber = 1)
         {
 
             try
             {
-                IEnumerable<Villa> villaList = await _dbVilla.GetAllAsync();
+                IEnumerable<Villa> villaList;
+                if (occupancy > 0)
+                {
+                    villaList= await _dbVilla.GetAllAsync(u=>u.Occupancy==occupancy,pageSize:pageSize,pageNumber:pageNumber);
+                }
+                else
+                {
+                    villaList = await _dbVilla.GetAllAsync(pageSize: pageSize, pageNumber: pageNumber);
+
+                }
+                if (!string.IsNullOrEmpty(search))
+                {
+                    villaList = villaList.Where(u=>
+                    u.Name.ToLower().Contains(search));
+                }
+                //u => u.Amenity.ToLower().Contains(search) ||
                 _response.Result = _mapper.Map<List<VillaDto>>(villaList);
                 _response.StatusCode = HttpStatusCode.OK;
                 _logger.Log("Get All Villas", "");
+                Pagination pagination = new Pagination() { PageNumber=pageNumber, PageSize=pageSize};
+                Response.Headers.Add("X-Pagination",JsonSerializer.Serialize(pagination));
                 return Ok(_response);
             }
             catch (Exception ex)
