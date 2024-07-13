@@ -69,4 +69,4 @@ To get a local copy up and running, follow these simple steps.
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/your-username/your-repo-name.git
+   git clone https://github.com/Ahmed-Elghobary/MagicVilla_API/tree/master/MagicVilla_VillaAPI
